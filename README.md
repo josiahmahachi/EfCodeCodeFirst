@@ -10,7 +10,6 @@ The blog post walks through the process of creating a simple C# application that
 - Configuring the BookContext class
 - Enabling Migrations
 - Creating and running Migrations
-- Seeding the database with initial data
 
 ## Usage
 
