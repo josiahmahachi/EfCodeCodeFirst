@@ -25,7 +25,7 @@ builder.Services.AddSwaggerGen(options =>
         },
         License = new OpenApiLicense
         {
-            Name = "Demo Contact",
+            Name = "Demo License",
             Url = new Uri("https://www.example.com/contact"),
         }
     });
