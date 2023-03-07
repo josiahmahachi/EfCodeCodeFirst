@@ -17,40 +17,26 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
         {
         }
 
-        /// <inheritdoc/>
-        public override async Task AddAsync(Book book)
+        /// <summary>
+        /// Get books writen by a certain author
+        /// </summary>
+        /// <param name="authorId">Id of the authur</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Book>> GetBooksByAuthorId(int authorId)
         {
-            // TODO: Add any additional validation logic before adding to the database.
-
-            await base.AddAsync(book);
+            return await _context.Books.Where(b => b.Authors.Any(x => x.Id == authorId)).ToListAsync();
         }
 
-        /// <inheritdoc/>
-        public override void Update(Book book)
+        /// <summary>
+        /// Add a book
+        /// </summary>
+        /// <param name="entity">The book entity</param>
+        /// <returns>void</returns>
+        public override async Task AddAsync(Book entity)
         {
-            // TODO: Add any additional validation logic before updating in the database.
+            // Do something here before calling base.AddAsync(entity)
 
-            base.Update(book);
-        }
-
-        /// <inheritdoc/>
-        public override void Delete(Book book)
-        {
-            // TODO: Add any additional validation logic before deleting from the database.
-
-            base.Delete(book);
-        }
-
-        /// <inheritdoc/>
-        public override async Task<IEnumerable<Book>> GetAllAsync()
-        {
-            return await _context.Books.ToListAsync();
-        }
-
-        /// <inheritdoc/>
-        public override async Task<Book?> GetByIdAsync(int id)
-        {
-            return await _context.Books.FindAsync(id);
+            await base.AddAsync(entity);
         }
     }
 }

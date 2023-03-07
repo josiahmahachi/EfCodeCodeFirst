@@ -16,41 +16,5 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
         public PublisherRepository(LibraryContext context) : base(context)
         {
         }
-
-        /// <inheritdoc/>
-        public override async Task AddAsync(Publisher publisher)
-        {
-            // TODO: Add any additional validation logic before adding to the database.
-
-            await base.AddAsync(publisher);
-        }
-
-        /// <inheritdoc/>
-        public override void Update(Publisher publisher)
-        {
-            // TODO: Add any additional validation logic before updating in the database.
-
-            base.Update(publisher);
-        }
-
-        /// <inheritdoc/>
-        public override void Delete(Publisher publisher)
-        {
-            // TODO: Add any additional validation logic before deleting from the database.
-
-            base.Delete(publisher);
-        }
-
-        /// <inheritdoc/>
-        public override async Task<IEnumerable<Publisher>> GetAllAsync()
-        {
-            return await _context.Publishers.ToListAsync();
-        }
-
-        /// <inheritdoc/>
-        public override async Task<Publisher?> GetByIdAsync(int id)
-        {
-            return await _context.Publishers.FindAsync(id);
-        }
     }
 }

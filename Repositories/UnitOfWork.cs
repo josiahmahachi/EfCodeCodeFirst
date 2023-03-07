@@ -1,5 +1,4 @@
 ﻿using EightApp.Demo.EfCoreCodeFirst01.Interfaces;
-using EightApp.Demo.EfCoreCodeFirst01.Models;
 
 namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
 {
@@ -19,17 +18,22 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
             _context.Dispose();
         }
 
-        public IRepositoryBase<T> GetRepository<T>() where T : ModelBase
+        TRepository IUnitOfWork.GetRepository<TRepository, TEntity>()
         {
-            if (_repositories.Keys.Contains(typeof(T)))
+            var type = typeof(TEntity);
+
+            if (_repositories.ContainsKey(type))
             {
-                return _repositories[typeof(T)] as IRepositoryBase<T>;
+                return (TRepository)_repositories[type];
+            }
+            else
+            {
+                var repositoryType = typeof(TRepository);
+                var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(TEntity)), _context);
+                _repositories.Add(type, repositoryInstance);
             }
 
-            var repository = new RepositoryBase<T>(_context);
-            _repositories.Add(typeof(T), repository);
-
-            return repository;
+            return (TRepository)_repositories[type];
         }
 
         public async Task SaveAsync()
@@ -37,5 +41,4 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
             await _context.SaveChangesAsync();
         }
     }
-
 }

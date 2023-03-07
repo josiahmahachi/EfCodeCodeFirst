@@ -4,38 +4,43 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
 {
-    public class RepositoryBase<T> : IRepositoryBase<T> where T : ModelBase
+    public class BaseRepository<T> : IRepositoryBase<T> where T : ModelBase
     {
-        private readonly LibraryContext _context;
+        protected readonly LibraryContext _context;
 
-        public RepositoryBase(LibraryContext context)
+        public BaseRepository(LibraryContext context)
         {
             _context = context;
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _context.Set<T>().ToListAsync();
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public virtual async Task<T?> GetByIdAsync(int id)
         {
             return await _context.Set<T>().FindAsync(id);
         }
 
-        public async Task AddAsync(T entity)
+        public virtual async Task AddAsync(T entity)
         {
             await _context.Set<T>().AddAsync(entity);
         }
 
-        public void Update(T entity)
+        public virtual void Update(T entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
         }
 
-        public void Delete(T entity)
+        public virtual void Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
+        }
+
+        public virtual async Task<bool> ExistsAsync(int id)
+        {
+            return await _context.Set<T>().AnyAsync(x => x.Id == id);
         }
     }
 }

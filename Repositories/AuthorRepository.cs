@@ -18,42 +18,6 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
         }
 
         /// <inheritdoc/>
-        public override async Task AddAsync(Author author)
-        {
-            // TODO: Add any additional validation logic before adding to the database.
-
-            await base.AddAsync(author);
-        }
-
-        /// <inheritdoc/>
-        public override void Update(Author author)
-        {
-            // TODO: Add any additional validation logic before updating in the database.
-
-            base.Update(author);
-        }
-
-        /// <inheritdoc/>
-        public override void Delete(Author author)
-        {
-            // TODO: Add any additional validation logic before deleting from the database.
-
-            base.Delete(author);
-        }
-
-        /// <inheritdoc/>
-        public override async Task<IEnumerable<Author>> GetAllAsync()
-        {
-            return await _context.Authors.ToListAsync();
-        }
-
-        /// <inheritdoc/>
-        public override async Task<Author?> GetByIdAsync(int id)
-        {
-            return await _context.Authors.FindAsync(id);
-        }
-
-        /// <inheritdoc/>
         public async Task<IEnumerable<Book>> GetBooksByAuthorAsync(int authorId)
         {
             return await _context.Books.Where(b => b.Authors.Any(x => x.Id == authorId)).ToListAsync();

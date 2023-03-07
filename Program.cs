@@ -1,4 +1,5 @@
-﻿using EightApp.Demo.EfCoreCodeFirst01.Controllers;
+﻿using EightApp.Demo.EfCoreCodeFirst01.Interfaces;
+using EightApp.Demo.EfCoreCodeFirst01.Repositories;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -6,6 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<LibraryContext>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IPublisherRepository, PublisherRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

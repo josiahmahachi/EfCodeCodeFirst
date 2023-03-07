@@ -1,19 +1,29 @@
-﻿using EightApp.Demo.EfCoreCodeFirst01.Models;
+﻿using EightApp.Demo.EfCoreCodeFirst01.Interfaces;
+using EightApp.Demo.EfCoreCodeFirst01.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
 {
+    /// <summary>
+    /// Controller for accessing author endpoints
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthorController : ControllerBase
     {
-        private readonly LibraryContext _context;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuthorRepository _authorRepository;
 
-        public AuthorController(LibraryContext context)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        public AuthorController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
+            _authorRepository = unitOfWork.GetRepository<IAuthorRepository, Author>();
         }
 
         /// <summary>
@@ -24,7 +34,9 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [ProducesResponseType(typeof(IEnumerable<Author>), 200)]
         public async Task<ActionResult<IEnumerable<Author>>> GetAuthors()
         {
-            return await _context.Authors.ToListAsync();
+            var authors = await _authorRepository.GetAllAsync();
+
+            return Ok(authors);
         }
 
         /// <summary>
@@ -37,14 +49,34 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<Author>> GetAuthor(int id)
         {
-            var author = await _context.Authors.FindAsync(id);
+            var author = await _authorRepository.GetByIdAsync(id);
 
             if (author == null)
             {
                 return NotFound();
             }
 
-            return author;
+            return Ok(author);
+        }
+
+        /// <summary>
+        /// Retrieves books by a specific author.
+        /// </summary>
+        /// <param name="id">The ID of the author whose books to retrieve.</param>
+        [HttpGet("GetBooksByAuthorById/{id}")]
+        [SwaggerOperation("GetBooksByAuthorById")]
+        [ProducesResponseType(typeof(Book), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor(int id)
+        {
+            var books = await _authorRepository.GetBooksByAuthorAsync(id);
+
+            if (books is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(books);
         }
 
         /// <summary>
@@ -56,8 +88,8 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [ProducesResponseType(typeof(Author), 201)]
         public async Task<ActionResult<Author>> PostAuthor(Author author)
         {
-            _context.Authors.Add(author);
-            await _context.SaveChangesAsync();
+            await _authorRepository.AddAsync(author);
+            await _unitOfWork.SaveAsync();
 
             return CreatedAtAction("GetAuthor", new { id = author.Id }, author);
         }
@@ -78,15 +110,15 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(author).State = EntityState.Modified;
+            _authorRepository.Update(author);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _unitOfWork.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AuthorExists(id))
+                if (!await AuthorExists(id))
                 {
                     return NotFound();
                 }
@@ -109,21 +141,23 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteAuthor(int id)
         {
-            var author = await _context.Authors.FindAsync(id);
+            var author = await _authorRepository.GetByIdAsync(id);
+
             if (author == null)
             {
                 return NotFound();
             }
 
-            _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
+            _authorRepository.Delete(author);
+
+            await _unitOfWork.SaveAsync();
 
             return NoContent();
         }
 
-        private bool AuthorExists(int id)
+        private async Task<bool> AuthorExists(int id)
         {
-            return _context.Authors.Any(e => e.Id == id);
+            return await _authorRepository.ExistsAsync(id);
         }
     }
 }

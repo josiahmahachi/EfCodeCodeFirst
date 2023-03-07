@@ -1,19 +1,29 @@
-﻿using EightApp.Demo.EfCoreCodeFirst01.Models;
+﻿using EightApp.Demo.EfCoreCodeFirst01.Interfaces;
+using EightApp.Demo.EfCoreCodeFirst01.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
 {
+    /// <summary>
+    /// Controller for accessing book endpoints
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class BookController : ControllerBase
     {
-        private readonly LibraryContext _context;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBookRepository _bookRepository;
 
-        public BookController(LibraryContext context)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="unitOfWork"></param>
+        public BookController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
+            _bookRepository = unitOfWork.GetRepository<IBookRepository, Book>();
         }
 
         /// <summary>
@@ -22,10 +32,11 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [HttpGet]
         [SwaggerOperation("GetAllBooks")]
         [ProducesResponseType(typeof(IEnumerable<Book>), 200)]
-        [Produces("application/json", "application/xml")]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
         {
-            return await _context.Books.ToListAsync();
+            var books = await _bookRepository.GetAllAsync();
+
+            return Ok(books);
         }
 
         /// <summary>
@@ -38,14 +49,34 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<Book>> GetBook(int id)
         {
-            var book = await _context.Books.FindAsync(id);
+            var book = await _bookRepository.GetByIdAsync(id);
 
             if (book == null)
             {
                 return NotFound();
             }
 
-            return book;
+            return Ok(book);
+        }
+
+        /// <summary>
+        /// Retrieves books by a specific author.
+        /// </summary>
+        /// <param name="id">The ID of the author whose books to retrieve.</param>
+        [HttpGet("GetBooksByAuthorById/{id}")]
+        [SwaggerOperation("GetBooksByAuthorById")]
+        [ProducesResponseType(typeof(Book), 200)]
+        [ProducesResponseType(404)]
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooksByAuthor(int id)
+        {
+            var books = await _bookRepository.GetBooksByAuthorId(id);
+
+            if (books is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(books);
         }
 
         /// <summary>
@@ -55,12 +86,12 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [HttpPost]
         [SwaggerOperation("AddBook")]
         [ProducesResponseType(typeof(Book), 201)]
-        public async Task<ActionResult<Book>> AddBook(Book book)
+        public async Task<ActionResult<Book>> PostBook(Book book)
         {
-            _context.Books.Add(book);
-            await _context.SaveChangesAsync();
+            await _bookRepository.AddAsync(book);
+            await _unitOfWork.SaveAsync();
 
-            return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
+            return CreatedAtAction("GetBook", new { id = book.Id }, book);
         }
 
         /// <summary>
@@ -72,22 +103,22 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [SwaggerOperation("UpdateBook")]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> UpdateBook(int id, Book book)
+        public async Task<IActionResult> PutBook(int id, Book book)
         {
             if (id != book.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(book).State = EntityState.Modified;
+            _bookRepository.Update(book);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _unitOfWork.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!BookExists(id))
+                if (!await BookExists(id))
                 {
                     return NotFound();
                 }
@@ -110,22 +141,23 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteBook(int id)
         {
-            var book = await _context.Books.FindAsync(id);
+            var book = await _bookRepository.GetByIdAsync(id);
 
             if (book == null)
             {
                 return NotFound();
             }
 
-            _context.Books.Remove(book);
-            await _context.SaveChangesAsync();
+            _bookRepository.Delete(book);
+
+            await _unitOfWork.SaveAsync();
 
             return NoContent();
         }
 
-        private bool BookExists(int id)
+        private async Task<bool> BookExists(int id)
         {
-            return _context.Books.Any(e => e.Id == id);
+            return await _bookRepository.ExistsAsync(id);
         }
     }
 }
