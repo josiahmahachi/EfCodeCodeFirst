@@ -7,7 +7,7 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
     /// <summary>
     /// Repository for accessing and modifying Publisher entities.
     /// </summary>
-    public class PublisherRepository : BaseRepository<Publisher>, IPublisherRepository
+    public class PublisherRepository : RepositoryBase<Publisher>, IPublisherRepository
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PublisherRepository"/> class.

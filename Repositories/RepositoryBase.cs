@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
 {
-    public class BaseRepository<T> : IRepositoryBase<T> where T : ModelBase
+    public class RepositoryBase<T> : IRepositoryBase<T> where T : ModelBase
     {
         protected readonly LibraryContext _context;
 
-        public BaseRepository(LibraryContext context)
+        public RepositoryBase(LibraryContext context)
         {
             _context = context;
         }

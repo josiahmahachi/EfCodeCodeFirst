@@ -7,7 +7,7 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
     /// <summary>
     /// Repository for accessing and modifying Author entities.
     /// </summary>
-    public class AuthorRepository : BaseRepository<Author>, IAuthorRepository
+    public class AuthorRepository : RepositoryBase<Author>, IAuthorRepository
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorRepository"/> class.

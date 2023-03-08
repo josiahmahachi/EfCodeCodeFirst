@@ -7,7 +7,7 @@ namespace EightApp.Demo.EfCoreCodeFirst01.Repositories
     /// <summary>
     /// Repository for accessing and modifying Book entities.
     /// </summary>
-    public class BookRepository : BaseRepository<Book>, IBookRepository
+    public class BookRepository : RepositoryBase<Book>, IBookRepository
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BookRepository"/> class.
